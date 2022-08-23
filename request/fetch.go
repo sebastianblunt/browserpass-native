@@ -21,12 +21,14 @@ func fetchDecryptedContents(request *request) {
 		response.SendErrorAndExit(
 			errors.CodeInvalidPasswordFileExtension,
 			&map[errors.Field]string{
-				errors.FieldMessage: "The requested password file does not have the expected '.gpg' extension",
+				errors.FieldMessage: "The requested password file does not have the expected '.age' extension",
 				errors.FieldAction:  "fetch",
 				errors.FieldFile:    request.File,
 			},
 		)
 	}
+
+	request.File = strings.TrimRight(request.File, ".gpg")
 
 	store, ok := request.Settings.Stores[request.StoreID]
 	if !ok {
@@ -147,14 +149,16 @@ func validateGpgBinary(gpgPath string) error {
 }
 
 func decryptFile(store *store, file string, gpgPath string) (string, error) {
-	passwordFilePath := filepath.Join(store.Path, file)
+	passwordFilePath := filepath.Join(store.Path, "store", file)
 	passwordFile, err := os.Open(passwordFilePath)
 	if err != nil {
 		return "", err
 	}
 
+	identityFilePath := filepath.Join(store.Path, "identities")
+
 	var stdout, stderr bytes.Buffer
-	gpgOptions := []string{"--decrypt", "--yes", "--quiet", "--batch", "-"}
+	gpgOptions := []string{"--decrypt", "--identity", identityFilePath}
 
 	cmd := exec.Command(gpgPath, gpgOptions...)
 	cmd.Stdin = passwordFile

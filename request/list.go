@@ -36,7 +36,7 @@ func listFiles(request *request) {
 
 		store.Path = normalizedStorePath
 
-		files, err := zglob.GlobFollowSymlinks(filepath.Join(store.Path, "/**/*.gpg"))
+		files, err := zglob.GlobFollowSymlinks(filepath.Join(store.Path, "store", "/**/*.age"))
 		if err != nil {
 			log.Errorf(
 				"Unable to list the files in the password store '%+v' at its location: %+v",
@@ -56,7 +56,7 @@ func listFiles(request *request) {
 		}
 
 		for i, file := range files {
-			relativePath, err := filepath.Rel(store.Path, file)
+			relativePath, err := filepath.Rel(filepath.Join(store.Path, "store"), file)
 			if err != nil {
 				log.Errorf(
 					"Unable to determine the relative path for a file '%v' in the password store '%+v': %+v",
